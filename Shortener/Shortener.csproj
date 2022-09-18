@@ -21,8 +21,4 @@
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Contollers\" />
-  </ItemGroup>
-
 </Project>

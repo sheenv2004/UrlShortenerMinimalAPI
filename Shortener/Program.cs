@@ -1,11 +1,9 @@
-
-
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//Add SqlServer connection string for DbContext
 builder.Services.AddDbContext<DataContext>(options=>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
@@ -16,6 +14,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//Method to Implement a logic to encode the url using base62 encoder 
  string base62Convert(int deci)
 {
     string s = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -29,13 +28,16 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+//HTTP POST method to encode and post url data if it is new else show the existing shorturl
 app.MapPost("/shorten", async (DataContext context, Url url) =>
 {
+   
     Random rnd = new Random();
     int counter = rnd.Next(1000000, 2000000); 
     url.shortUrl = base62Convert(counter);
     url.counter = counter;
     DbSet<Url> db =context.Urls;
+    //Check if url exists
     IQueryable<bool> c = db.Select(x => x.url.Contains(url.url));
     if (c.All(x=>x.Equals(false)))
     {
@@ -45,9 +47,7 @@ app.MapPost("/shorten", async (DataContext context, Url url) =>
     }
     else
     {
-        //return Results.BadRequest("url already exists");
         return Results.BadRequest(await GetExistingUrls(context,url));
-
     }
    
 });
@@ -57,7 +57,7 @@ async Task<List<Url>> GetExistingUrls(DataContext context, Url url) =>
     await context.Urls.Where(x => x.url.Contains(url.url)).ToListAsync();
 
 
-//app.MapGet("/", () => "Test Data acccess!");
+//HTTP GET method for original url using short url
 app.MapGet("/{shortUrl}", async (DataContext context, string shortUrl) =>
      await context.Urls.SingleAsync(s => s.shortUrl == shortUrl) is Url url ?
      Results.Ok(url) :
