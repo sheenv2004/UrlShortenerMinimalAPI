@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "gOXiJfcWQ9rK2TAzixfcjfp/eW5fotPUwip2yOlehXE=",
+  "Source": "Shortener",
+  "BasePath": "_content/Shortener",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
