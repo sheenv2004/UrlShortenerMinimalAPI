@@ -26,17 +26,31 @@ if (app.Environment.IsDevelopment())
     }
     return hash_str;
 }
+
 app.UseHttpsRedirection();
 
 //HTTP POST method to encode and post url data if it is new else show the existing shorturl
-app.MapPost("/shorten", async (DataContext context, Url url) =>
+app.MapPost("/shorten", async (DataContext context, string OriginalUrl) =>
 {
-   
-    Random rnd = new Random();
-    int counter = rnd.Next(1000000, 2000000); 
+    DbSet<Url> db = context.Urls;
+    //Setting counter to to create the short url code. Incrementing by one for every subsequent request
+    int counter;
+    if(!db.Any())
+    {
+        counter = 1000000;
+    }
+    else
+    {
+        counter = db.Select(x => x.counter).Max()+1; 
+    }
+    //Random rnd = new Random();
+    //int counter = cnt++;
+    Url url = new Url();
     url.shortUrl = base62Convert(counter);
+    url.url = OriginalUrl;
     url.counter = counter;
-    DbSet<Url> db =context.Urls;
+    //url.counter = counter;
+    
     //Check if url exists
     IQueryable<bool> c = db.Select(x => x.url.Contains(url.url));
     if (c.All(x=>x.Equals(false)))
@@ -51,8 +65,10 @@ app.MapPost("/shorten", async (DataContext context, Url url) =>
     }
    
 });
+//Method to get all urls to list
 async Task<List<Url>> GetAllUrls(DataContext context) =>
     await context.Urls.ToListAsync();
+//Method to get existing url with url
 async Task<List<Url>> GetExistingUrls(DataContext context, Url url) =>
     await context.Urls.Where(x => x.url.Contains(url.url)).ToListAsync();
 
